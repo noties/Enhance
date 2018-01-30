@@ -1,0 +1,42 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.github.jengelman.gradle.plugins:shadow:2.0.2'
+    }
+}
+
+group 'ru.noties'
+version '1.0.0'
+
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'com.github.johnrengelman.shadow'
+
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+mainClassName = 'ru.noties.enhance.Enhance'
+
+repositories {
+    jcenter()
+}
+
+dependencies {
+
+    compile 'com.google.code.findbugs:jsr305:3.0.2'
+
+    compile 'com.github.javaparser:javaparser-core:3.5.12'
+
+    compile 'com.google.googlejavaformat:google-java-format:1.5'
+
+    compile 'commons-cli:commons-cli:1.4'
+
+    compile 'commons-io:commons-io:2.6'
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion '4.5'
+    distributionType 'all'
+}
