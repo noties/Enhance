@@ -15,6 +15,8 @@ public class Enhance {
 
     public static void main(String[] args) {
 
+        log("[Enhance] version: %s", EnhanceVersion.NAME);
+
         final long start = System.currentTimeMillis();
 
         final EnhanceOptions options = EnhanceOptions.create(args);

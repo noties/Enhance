@@ -2,6 +2,7 @@ package ru.noties.enhance;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
+import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
 import com.github.javaparser.ast.body.*;
 import com.github.javaparser.ast.nodeTypes.NodeWithJavadoc;
@@ -129,10 +130,36 @@ class EnhanceWriterImpl extends EnhanceWriter {
         }
 
         @Override
+        public void visit(EnumDeclaration n, ApiInfoStore arg) {
+            super.visit(n, arg);
+
+            final String type = typeName(n);
+
+            final NodeList<EnumConstantDeclaration> constants = n.getEntries();
+            if (constants != null) {
+                for (EnumConstantDeclaration declaration : constants) {
+                    setApiInfo(declaration, arg.field(type, declaration.getNameAsString()));
+                }
+            }
+
+            visit(type, n, arg, n.getConstructors());
+        }
+
+        @Override
         public void visit(ClassOrInterfaceDeclaration n, ApiInfoStore api) {
             super.visit(n, api);
 
             final String type = typeName(n);
+
+            visit(type, n, api, n.getConstructors());
+        }
+
+        private void visit(
+                @Nonnull String type,
+                @Nonnull TypeDeclaration<?> n,
+                @Nonnull ApiInfoStore api,
+                @Nullable List<ConstructorDeclaration> constructors
+        ) {
 
             final List<FieldDeclaration> fields = n.getFields();
             if (fields != null) {
@@ -154,7 +181,6 @@ class EnhanceWriterImpl extends EnhanceWriter {
                     callableDeclarations.addAll(methods);
                 }
 
-                final List<ConstructorDeclaration> constructors = n.getConstructors();
                 if (constructors != null) {
                     callableDeclarations.addAll(constructors);
                 }

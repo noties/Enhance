@@ -8,7 +8,7 @@ buildscript {
 }
 
 group 'ru.noties'
-version '1.0.0'
+version '1.0.1'
 
 apply plugin: 'java'
 apply plugin: 'application'
@@ -39,4 +39,20 @@ dependencies {
 task wrapper(type: Wrapper) {
     gradleVersion '4.5'
     distributionType 'all'
+}
+
+afterEvaluate {
+    final def folder = new File(rootDir, '/gen/ru/noties/enhance')
+    if (!folder.exists()) {
+        folder.mkdirs()
+    }
+    final def file = new File(folder, 'EnhanceVersion.java')
+    file.write("""
+package ru.noties.enhance;
+class EnhanceVersion { static final String NAME = \"${version}\"; } 
+    """)
+}
+
+sourceSets {
+    main.java.srcDirs += new File(rootDir, 'gen')
 }
