@@ -5,11 +5,16 @@ import javax.annotation.Nonnull;
 public class ApiVersion {
 
     @Nonnull
+    public static ApiVersion latest() {
+        return VERSIONS[VERSIONS.length - 1];
+    }
+
+    @Nonnull
     public static ApiVersion of(int sdkInt) {
         final ApiVersion version;
         if (sdkInt < 0
                 || (sdkInt - 1) >= LENGTH) {
-            version = new ApiVersion(sdkInt, "unknown", "unknown");
+            version = new ApiVersion(sdkInt, "unknown", "unknown", true);
         } else {
             version = VERSIONS[sdkInt - 1];
         }
@@ -19,11 +24,17 @@ public class ApiVersion {
     private final int sdkInt;
     private final String versionName;
     private final String codeName;
+    private final boolean unknown;
 
     private ApiVersion(int sdkInt, @Nonnull String versionName, @Nonnull String codeName) {
+        this(sdkInt, versionName, codeName, false);
+    }
+
+    private ApiVersion(int sdkInt, @Nonnull String versionName, @Nonnull String codeName, boolean unknown) {
         this.sdkInt = sdkInt;
         this.versionName = versionName;
         this.codeName = codeName;
+        this.unknown = unknown;
     }
 
     public int getSdkInt() {
@@ -40,12 +51,17 @@ public class ApiVersion {
         return codeName;
     }
 
+    public boolean isUnknown() {
+        return unknown;
+    }
+
     @Override
     public String toString() {
         return "ApiVersion{" +
                 "sdkInt=" + sdkInt +
                 ", versionName='" + versionName + '\'' +
                 ", codeName='" + codeName + '\'' +
+                ", unknown=" + unknown +
                 '}';
     }
 
@@ -76,7 +92,8 @@ public class ApiVersion {
             new ApiVersion(24, "7.0", "Nougat"),
             new ApiVersion(25, "7.1", "Nougat"),
             new ApiVersion(26, "8.0", "Oreo"),
-            new ApiVersion(27, "8.1", "Oreo")
+            new ApiVersion(27, "8.1", "Oreo"),
+            new ApiVersion(28, "9.0", "Pie")
     };
 
     private static final int LENGTH = VERSIONS.length;

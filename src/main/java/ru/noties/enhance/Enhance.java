@@ -4,8 +4,11 @@ import org.apache.commons.io.FileUtils;
 import ru.noties.enhance.options.EnhanceOptions;
 
 import javax.annotation.Nonnull;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.Locale;
 
 import static ru.noties.enhance.Log.log;
 
@@ -15,11 +18,35 @@ public class Enhance {
 
     public static void main(String[] args) {
 
-        log("[Enhance] version: %s", EnhanceVersion.NAME);
+        final ApiVersionFormatter apiVersionFormatter = ApiVersionFormatter.create();
 
-        final long start = System.currentTimeMillis();
+        log("[Enhance] version: %s", EnhanceVersion.NAME);
+        log("[Enhance] latest SDK version: %s", apiVersionFormatter.format(ApiVersion.latest()));
+        log("[Enhance] https://github.com/noties/Enhance");
 
         final EnhanceOptions options = EnhanceOptions.create(args);
+
+        // @since 1.0.2
+        // check if we have this version info included and ask user if he/she want to proceed if
+        // supplied sdk is not known to this library version
+        final ApiVersion apiVersion = ApiVersion.of(options.sdk());
+        if (apiVersion.isUnknown()) {
+
+            System.err.printf(Locale.US, "[Enhance] WARNING: specified SDK version %d (`%s`) is unknown to this " +
+                            "library version, do you wish to proceed anyway? (Y|N)%n", options.sdk(),
+                    apiVersionFormatter.format(apiVersion));
+
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
+                final String line = reader.readLine();
+                if (!"y".equalsIgnoreCase(line)) {
+                    return;
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        final long start = System.currentTimeMillis();
 
         log("[Enhance] obtaining required files/folders");
 
@@ -94,7 +121,7 @@ public class Enhance {
 
         log("[Enhance] processing source files");
 
-        final EnhanceWriter writer = EnhanceWriter.create(options.sourceFormat(), store, ApiVersionFormatter.create());
+        final EnhanceWriter writer = EnhanceWriter.create(options.sourceFormat(), store, apiVersionFormatter);
         writer.write(source, sdkSources);
 
         final long took = System.currentTimeMillis() - start;

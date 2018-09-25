@@ -8,7 +8,7 @@ buildscript {
 }
 
 group 'ru.noties'
-version '1.0.1'
+version '1.0.2'
 
 apply plugin: 'java'
 apply plugin: 'application'
@@ -36,8 +36,8 @@ dependencies {
     compile 'commons-io:commons-io:2.6'
 }
 
-task wrapper(type: Wrapper) {
-    gradleVersion '4.5'
+wrapper {
+    gradleVersion '4.10.2'
     distributionType 'all'
 }
 
