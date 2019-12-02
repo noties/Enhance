@@ -17,7 +17,7 @@ public abstract class ApiVersionFormatter {
 
         @Override
         public String format(@Nonnull ApiVersion apiVersion) {
-            // @since 5.1 Lollipop (22)
+            // for example - @since 5.1 Lollipop (22)
             return apiVersion.getVersionName() + " " + apiVersion.getCodeName() + " (" + apiVersion.getSdkInt() + ")";
         }
     }

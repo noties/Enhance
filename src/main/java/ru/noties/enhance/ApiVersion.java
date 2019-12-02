@@ -93,7 +93,8 @@ public class ApiVersion {
             new ApiVersion(25, "7.1", "Nougat"),
             new ApiVersion(26, "8.0", "Oreo"),
             new ApiVersion(27, "8.1", "Oreo"),
-            new ApiVersion(28, "9.0", "Pie")
+            new ApiVersion(28, "9.0", "Pie"),
+            new ApiVersion(29, "10", "Android")
     };
 
     private static final int LENGTH = VERSIONS.length;

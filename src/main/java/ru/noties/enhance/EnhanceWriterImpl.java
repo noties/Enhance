@@ -68,7 +68,9 @@ class EnhanceWriterImpl extends EnhanceWriter {
                 final String name = file.getName();
                 final File f = new File(destination, name);
 
-                if (name.endsWith(".java")) {
+                // @since 1.0.3 there are also `*.annotated.java` files, ignore them
+                if (name.endsWith(".java")
+                        && !name.endsWith(".annotated.java")) {
 
                     final String java = processJavaFile(file);
                     try {
