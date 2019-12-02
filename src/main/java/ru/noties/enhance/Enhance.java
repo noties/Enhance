@@ -8,9 +8,13 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 import static ru.noties.enhance.Log.log;
+import static ru.noties.enhance.Stats.printStatsFor;
 
 public class Enhance {
 
@@ -64,6 +68,10 @@ public class Enhance {
         log("[Enhance] parsing api-versions.xml");
 
         final ApiInfoStore store = ApiInfoStore.create(sdkHelper.apiVersions());
+//        if (true) {
+//            printStatsFor(ApiVersion.latest(), store.info());
+//            return;
+//        }
 
         final File sdkSources = sdkHelper.source();
 

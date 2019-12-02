@@ -15,16 +15,6 @@ import java.util.Map;
 
 class ApiInfoStoreImpl extends ApiInfoStore {
 
-    private static class TypeVersion extends ApiInfo {
-
-        private final Map<String, ApiInfo> fields = new HashMap<>(3);
-        private final Map<String, ApiInfo> methods = new HashMap<>(3);
-
-        private TypeVersion(ApiVersion since, ApiVersion deprecated) {
-            super(since, deprecated);
-        }
-    }
-
     private final Map<String, TypeVersion> map;
 
     ApiInfoStoreImpl(@Nonnull File apiVersions) {
@@ -53,6 +43,12 @@ class ApiInfoStoreImpl extends ApiInfoStore {
         return version != null
                 ? version.methods.get(signature)
                 : null;
+    }
+
+    @Nonnull
+    @Override
+    public Map<String, TypeVersion> info() {
+        return map;
     }
 
     private static class Parser {
