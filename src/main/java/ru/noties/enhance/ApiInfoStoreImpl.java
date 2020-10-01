@@ -12,6 +12,8 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 class ApiInfoStoreImpl extends ApiInfoStore {
 
@@ -51,7 +53,7 @@ class ApiInfoStoreImpl extends ApiInfoStore {
         return map;
     }
 
-    private static class Parser {
+    static class Parser {
 
         private static final String NAME = "name";
         private static final String SINCE = "since";
@@ -194,8 +196,10 @@ class ApiInfoStoreImpl extends ApiInfoStore {
             return version;
         }
 
+        private static final Pattern RE = Pattern.compile("L\\w+[/\\w]+[/$](\\w+);");
+
         @Nonnull
-        private static String normalizeMethodSignature(@Nonnull String name) {
+        static String normalizeMethodSignature(@Nonnull String name) {
 
             // we will cut off all package info from reference types (and possibly parent class)
             // LBuilder; instead of Landroid/app/AlertDialog$Builder; so we do not have to resolve types in source code..
@@ -207,41 +211,21 @@ class ApiInfoStoreImpl extends ApiInfoStore {
                 out = name;
             } else {
 
-                final String[] split = name.split(";");
-                final StringBuilder builder = new StringBuilder(name.length());
-
-                char c;
-
-                int from = -1;
-                int to = -1;
-
-                for (String s : split) {
-
-                    for (int i = 0, length = s.length(); i < length; i++) {
-
-                        c = s.charAt(i);
-
-                        if (from == -1 && 'L' == c) {
-                            from = i;
-                        } else if (c == '$' || c == '/') {
-                            to = i;
-                        }
+                final Matcher matcher = RE.matcher(name);
+                final StringBuilder builder = new StringBuilder();
+                index = 0;
+                while (matcher.find()) {
+                    if (matcher.start() > index) {
+                        builder.append(name, index, matcher.start());
                     }
-
-                    // if both are -1 -> just append the whole thing
-                    if (from == -1
-                            && to == -1) {
-                        builder.append(s); // should happen only at the end (if return value is not a reference type
-                    } else if (from == -1 || to == -1) {
-                        throw new IllegalStateException("Unexpected state for method signature part: " + s + ", whole: " + name);
-                    } else {
-                        builder.append(s, 0, from + 1);
-                        builder.append(s, to + 1, s.length());
-                        builder.append(';');
-                    }
-
-                    from = -1;
-                    to = -1;
+                    index = matcher.end();
+                    builder.append('L')
+                            .append(matcher.group(1))
+                            .append(';');
+                }
+                if (index < name.length()) {
+                    // the rest
+                    builder.append(name.substring(index));
                 }
 
                 out = builder.toString();

@@ -70,7 +70,7 @@ Big kudos to the maintainers of amazing [javaparser](https://github.com/javapars
 ## License
 
 ```
-  Copyright 2018 Dimitry Ivanov (mail@dimitryivanov.ru)
+  Copyright 2018 Dimitry Ivanov (legal@noties.io)
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.

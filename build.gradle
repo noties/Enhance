@@ -29,10 +29,11 @@ dependencies {
     compile 'com.google.googlejavaformat:google-java-format:1.5'
     compile 'commons-cli:commons-cli:1.4'
     compile 'commons-io:commons-io:2.6'
+    testCompile 'junit:junit:4.12'
 }
 
 wrapper {
-    gradleVersion '4.10.2'
+    gradleVersion '6.6.1'
     distributionType 'all'
 }
 
