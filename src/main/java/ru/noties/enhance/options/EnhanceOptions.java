@@ -15,5 +15,7 @@ public abstract class EnhanceOptions {
     @Nonnull
     public abstract SourceFormat sourceFormat();
 
+    public abstract boolean emitDiff();
+
     public abstract int sdk();
 }

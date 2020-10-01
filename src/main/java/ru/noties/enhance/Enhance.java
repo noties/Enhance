@@ -8,10 +8,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import static ru.noties.enhance.Log.log;
 import static ru.noties.enhance.Stats.printStatsFor;
@@ -68,10 +65,14 @@ public class Enhance {
         log("[Enhance] parsing api-versions.xml");
 
         final ApiInfoStore store = ApiInfoStore.create(sdkHelper.apiVersions());
-//        if (true) {
-//            printStatsFor(ApiVersion.latest(), store.info());
-//            return;
-//        }
+        if (options.emitDiff()) {
+            log("[Enhance] emit diff for %d SDK level (%s %s)",
+                    apiVersion.getSdkInt(),
+                    apiVersion.getCodeName(),
+                    apiVersion.getVersionName());
+            printStatsFor(apiVersion, store.info());
+            return;
+        }
 
         final File sdkSources = sdkHelper.source();
 
@@ -79,9 +80,7 @@ public class Enhance {
         {
             final String folder = sdkHelper.folder();
             final File file = new File(appFolder, folder);
-            if (file.exists()) {
-                source = file;
-            } else {
+            if (!file.exists()) {
 
                 if (!file.mkdirs()) {
                     throw new RuntimeException("Cannot create android sources backup folder at: " + file.getPath());
@@ -107,8 +106,8 @@ public class Enhance {
                     throw new RuntimeException(e);
                 }
 
-                source = file;
             }
+            source = file;
         }
 
         // now, we duplicate files from backup to source, if it's java and there api info -> parse and api info

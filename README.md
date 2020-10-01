@@ -32,9 +32,11 @@ There are few configuration options:
 * `sdk`: (required) Android SDK version (for example 25)
 * `format`: Allows to format processed Java source files. Available options are: `aosp` and `google`. Everything else (including empty argument) won't format processed code
 * `sp`: path to Android SDK
+* `diff`: just generate statistics info/diff for specified SDK version
 
 ```
 usage: Enhance
+ -diff                  Emit diff
  -format <arg>          Format sources. Accepts (aosp|google). Everything
                         else would keep original formatting
  -h,--help              Prints help

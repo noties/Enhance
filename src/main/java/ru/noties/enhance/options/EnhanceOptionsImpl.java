@@ -10,6 +10,7 @@ class EnhanceOptionsImpl extends EnhanceOptions {
     private static final String FORMAT = "format";
     private static final String SDK = "sdk";
     private static final String HELP = "h";
+    private static final String DIFF = "diff";
 
     private final CommandLine commandLine;
 
@@ -69,6 +70,11 @@ class EnhanceOptionsImpl extends EnhanceOptions {
     }
 
     @Override
+    public boolean emitDiff() {
+        return commandLine.hasOption(DIFF);
+    }
+
+    @Override
     public int sdk() {
         final String value = commandLine.getOptionValue(SDK, "0");
         return Integer.parseInt(value);
@@ -90,6 +96,8 @@ class EnhanceOptionsImpl extends EnhanceOptions {
                 .hasArg(true)
                 .desc("Specify which SDK version to process.")
                 .build());
+
+        options.addOption(DIFF, false, "Emit diff");
 
         options.addOption(HELP, "help", false, "Prints help");
 
