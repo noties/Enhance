@@ -43,7 +43,7 @@ class EnhanceOptionsImpl extends EnhanceOptions {
             if (system == null
                     || system.length() == 0) {
                 throw new IllegalStateException("Cannot find 'ANDROID_HOME' system variable. Define it on " +
-                        "the system level or specify with `-p` option");
+                        "the system level or specify with `-" + SDK_PATH + "` option");
             }
             out = system;
         }
