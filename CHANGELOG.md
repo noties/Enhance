@@ -1,5 +1,9 @@
 # CHANGELOG
 
+# 1.2.0
+### Added
+* Android 12, SDK 31 API version
+
 # 1.1.1
 ### Fixed
 * Error message when SDK path is missing ([#2])<br>Thanks [@drakeet]
