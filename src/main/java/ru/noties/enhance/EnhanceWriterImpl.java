@@ -1,6 +1,7 @@
 package ru.noties.enhance;
 
 import com.github.javaparser.JavaParser;
+import com.github.javaparser.ParseResult;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -36,6 +37,8 @@ class EnhanceWriterImpl extends EnhanceWriter {
     private final SourceFormatter sourceFormatter;
     private final ApiInfoStore apiInfoStore;
     private final ApiVersionFormatter apiVersionFormatter;
+
+    private final JavaParser javaParser = new JavaParser();
 
     EnhanceWriterImpl(@Nonnull SourceFormat format, @Nonnull ApiInfoStore apiInfoStore, @Nonnull ApiVersionFormatter apiVersionFormatter) {
         this.sourceFormatter = sourceFormatter(format);
@@ -97,7 +100,13 @@ class EnhanceWriterImpl extends EnhanceWriter {
 
         final CompilationUnit unit;
         try {
-            unit = JavaParser.parse(file);
+            final ParseResult<CompilationUnit> result = javaParser.parse(file);
+            if (result.isSuccessful()) {
+                //noinspection OptionalGetWithoutIsPresent
+                unit = result.getResult().get();
+            } else {
+                throw new RuntimeException(result.toString());
+            }
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);
         }
