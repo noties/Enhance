@@ -109,7 +109,18 @@ class EnhanceWriterImpl extends EnhanceWriter {
         if (sourceFormatter == null) {
             out = unit.toString();
         } else {
-            out = sourceFormatter.format(unit.toString());
+            final String source = unit.toString();
+            try {
+                out = sourceFormatter.format(source);
+            } catch (Throwable t) {
+                try {
+                    final File failedFile = new File(".", ".failed." + file.getName());
+                    FileUtils.write(failedFile, source, "utf-8");
+                } catch (IOException e) {
+                    // ignored
+                }
+                throw t;
+            }
         }
 
         return out;
