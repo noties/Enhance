@@ -1,5 +1,20 @@
 # CHANGELOG
 
+# 34
+Applied new version-name strategy - now version equals latest supported Android SDK platform
+### Added
+* Upside Down Cake (34)
+
+### Changed
+* Updated code structure, moved to `io.noties` package (no change for clients)
+
+
+# 1.3.0
+### Added
+* Android S_V2 (32)
+* Tiramisu (33)
+
+
 # 1.2.0
 ### Added
 * Android 12, SDK 31 API version

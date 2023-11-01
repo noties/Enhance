@@ -1,4 +1,4 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import com.github.javaparser.ast.body.CallableDeclaration;
 import com.github.javaparser.ast.body.MethodDeclaration;

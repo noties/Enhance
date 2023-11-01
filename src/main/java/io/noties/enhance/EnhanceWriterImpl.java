@@ -1,4 +1,4 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
@@ -13,8 +13,8 @@ import com.github.javaparser.javadoc.description.JavadocDescription;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import com.google.googlejavaformat.java.JavaFormatterOptions;
+import io.noties.enhance.options.SourceFormat;
 import org.apache.commons.io.FileUtils;
-import ru.noties.enhance.options.SourceFormat;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,7 +25,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.noties.enhance.Log.log;
+import static io.noties.enhance.Log.log;
 
 class EnhanceWriterImpl extends EnhanceWriter {
 

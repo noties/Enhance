@@ -1,4 +1,4 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 public class ApiInfo {
 

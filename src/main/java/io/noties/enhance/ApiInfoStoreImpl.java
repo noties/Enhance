@@ -1,4 +1,4 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;

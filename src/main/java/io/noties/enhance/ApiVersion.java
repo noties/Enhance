@@ -1,4 +1,4 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import javax.annotation.Nonnull;
 
@@ -99,6 +99,7 @@ public class ApiVersion {
             new ApiVersion(31, "12", "Android S"),
             new ApiVersion(32, "12", "Android S_V2"),
             new ApiVersion(33, "13", "Tiramisu"),
+            new ApiVersion(34, "14", "Upside Down Cake")
     };
 
     private static final int LENGTH = VERSIONS.length;

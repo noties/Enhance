@@ -1,7 +1,7 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import org.apache.commons.io.FileUtils;
-import ru.noties.enhance.options.EnhanceOptions;
+import io.noties.enhance.options.EnhanceOptions;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
@@ -10,8 +10,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Locale;
 
-import static ru.noties.enhance.Log.log;
-import static ru.noties.enhance.Stats.printStatsFor;
+import static io.noties.enhance.Log.log;
+import static io.noties.enhance.Stats.printStatsFor;
 
 public class Enhance {
 

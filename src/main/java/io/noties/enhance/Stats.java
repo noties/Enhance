@@ -1,4 +1,4 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import javax.annotation.Nonnull;
 import java.util.*;
