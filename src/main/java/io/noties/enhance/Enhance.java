@@ -1,7 +1,7 @@
 package io.noties.enhance;
 
-import org.apache.commons.io.FileUtils;
 import io.noties.enhance.options.EnhanceOptions;
+import org.apache.commons.io.FileUtils;
 
 import javax.annotation.Nonnull;
 import java.io.BufferedReader;
@@ -22,7 +22,7 @@ public class Enhance {
         final ApiVersionFormatter apiVersionFormatter = ApiVersionFormatter.create();
 
         log("[Enhance] version: %s", EnhanceVersion.NAME);
-        log("[Enhance] latest SDK version: %s", apiVersionFormatter.format(ApiVersion.latest()));
+        log("[Enhance] latest Android SDK version: %s", apiVersionFormatter.format(ApiVersion.latest()));
         log("[Enhance] https://github.com/noties/Enhance");
 
         final EnhanceOptions options = EnhanceOptions.create(args);
@@ -128,7 +128,12 @@ public class Enhance {
 
         log("[Enhance] processing source files");
 
-        final EnhanceWriter writer = EnhanceWriter.create(options.sourceFormat(), store, apiVersionFormatter);
+        final EnhanceWriter writer = EnhanceWriter.create(
+                apiVersion,
+                options.sourceFormat(),
+                store,
+                apiVersionFormatter
+        );
         writer.write(source, sdkSources);
 
         final long took = System.currentTimeMillis() - start;

@@ -7,8 +7,8 @@ plugins {
 group 'io.noties'
 version '34'
 
-sourceCompatibility = JavaVersion.VERSION_17
-targetCompatibility = JavaVersion.VERSION_17
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
 
 mainClassName = 'io.noties.enhance.Enhance'
 
@@ -21,10 +21,10 @@ dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
 
     // https://github.com/javaparser/javaparser
-    implementation 'com.github.javaparser:javaparser-core:3.25.4'
+    implementation 'com.github.javaparser:javaparser-core:3.25.5'
 
     // https://github.com/google/google-java-format
-    implementation 'com.google.googlejavaformat:google-java-format:1.17.0'
+    implementation 'com.google.googlejavaformat:google-java-format:1.18.1'
 
     implementation 'commons-cli:commons-cli:1.4'
     implementation 'commons-io:commons-io:2.7'
