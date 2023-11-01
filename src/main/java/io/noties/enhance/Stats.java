@@ -1,11 +1,11 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import javax.annotation.Nonnull;
 import java.util.*;
 
 abstract class Stats {
 
-    static void printStatsFor(@Nonnull ApiVersion version, @Nonnull Map<String, ApiInfoStore.TypeVersion> info) {
+    static void printStatsFor(@Nonnull Integer version, @Nonnull Map<String, ApiInfoStore.TypeVersion> info) {
 
         // filter
         final Map<String, ApiInfoStore.TypeVersion> filtered = new HashMap<>();
@@ -28,7 +28,7 @@ abstract class Stats {
             }
 
             if (shouldEmit(version, original)
-                    || (typeVersion.fields.size() > 0 || typeVersion.methods.size() > 0)) {
+                    || (!typeVersion.fields.isEmpty() || !typeVersion.methods.isEmpty())) {
                 filtered.put(types.getKey(), typeVersion);
             }
         }
@@ -69,8 +69,8 @@ abstract class Stats {
         }
     }
 
-    private static boolean shouldEmit(@Nonnull ApiVersion version, @Nonnull ApiInfo info) {
-        return version == info.since || version == info.deprecated;
+    private static boolean shouldEmit(@Nonnull Integer version, @Nonnull ApiInfo info) {
+        return version.equals(info.since) || version.equals(info.deprecated);
     }
 
     private static List<String> sorted(@Nonnull Collection<String> collection) {
@@ -81,19 +81,19 @@ abstract class Stats {
 
     private static boolean appendDiffed(
             @Nonnull StringBuilder builder,
-            @Nonnull ApiVersion version,
+            @Nonnull Integer version,
             @Nonnull ApiInfo info) {
 
         // priority for deprecated (some nodes are both added and deprecated in the same version)
 
         boolean result = false;
 
-        if (version == info.deprecated) {
+        if (version.equals(info.deprecated)) {
             builder.append('-');
             result = true;
         }
 
-        if (version == info.since) {
+        if (version.equals(info.since)) {
             builder.append('+');
             result = true;
         }

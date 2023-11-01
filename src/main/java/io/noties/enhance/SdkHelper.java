@@ -1,6 +1,6 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
-import ru.noties.enhance.options.EnhanceOptions;
+import io.noties.enhance.options.EnhanceOptions;
 
 import javax.annotation.Nonnull;
 import java.io.File;

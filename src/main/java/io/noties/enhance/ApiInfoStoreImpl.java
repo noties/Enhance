@@ -1,4 +1,4 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -156,8 +156,8 @@ class ApiInfoStoreImpl extends ApiInfoStore {
         private static boolean isEmpty(@Nonnull TypeVersion version) {
             return version.since == null
                     && version.deprecated == null
-                    && version.fields.size() == 0
-                    && version.methods.size() == 0;
+                    && version.fields.isEmpty()
+                    && version.methods.isEmpty();
         }
 
         @Nullable
@@ -165,8 +165,8 @@ class ApiInfoStoreImpl extends ApiInfoStore {
 
             final ApiInfo apiInfo;
 
-            final ApiVersion since = apiVersion(element.getAttribute(SINCE));
-            final ApiVersion deprecated = apiVersion(element.getAttribute(DEPRECATED));
+            final Integer since = apiVersion(element.getAttribute(SINCE));
+            final Integer deprecated = apiVersion(element.getAttribute(DEPRECATED));
 
             if (since == null
                     && deprecated == null) {
@@ -179,21 +179,19 @@ class ApiInfoStoreImpl extends ApiInfoStore {
         }
 
         @Nullable
-        private static ApiVersion apiVersion(@Nullable String value) {
-            final ApiVersion version;
-            if (value == null
-                    || value.length() == 0) {
-                version = null;
-            } else {
-                int sdk;
-                try {
-                    sdk = Integer.parseInt(value);
-                } catch (NumberFormatException e) {
-                    sdk = 0;
-                }
-                version = ApiVersion.of(sdk);
+        private static Integer apiVersion(@Nullable String value) {
+            if (value == null || value.isEmpty()) {
+                return null;
             }
-            return version;
+
+            try {
+                return Integer.parseInt(value);
+            } catch (NumberFormatException e) {
+                //noinspection CallToPrintStackTrace
+                e.printStackTrace();
+            }
+
+            return null;
         }
 
         private static final Pattern RE = Pattern.compile("L\\w+[/\\w]+[/$](\\w+);");

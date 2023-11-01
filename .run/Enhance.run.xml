@@ -1,13 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="Enhance" type="Application" factoryName="Application" nameIsGenerated="true">
-    <option name="ALTERNATIVE_JRE_PATH" value="azul-13" />
-    <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="true" />
-    <option name="MAIN_CLASS_NAME" value="ru.noties.enhance.Enhance" />
+    <option name="MAIN_CLASS_NAME" value="io.noties.enhance.Enhance" />
     <module name="enhance.main" />
-    <option name="PROGRAM_PARAMETERS" value="-sdk 33 -format google" />
+    <option name="PROGRAM_PARAMETERS" value="-sdk 34 -format google" />
+    <option name="VM_PARAMETERS" value="--add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED" />
     <extension name="coverage">
       <pattern>
-        <option name="PATTERN" value="ru.noties.enhance.*" />
+        <option name="PATTERN" value="io.noties.enhance.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

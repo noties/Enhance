@@ -1,4 +1,4 @@
-package ru.noties.enhance.options;
+package io.noties.enhance.options;
 
 public enum SourceFormat {
     NONE,

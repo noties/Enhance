@@ -1,7 +1,8 @@
-package ru.noties.enhance;
+package io.noties.enhance;
 
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ParseResult;
+import com.github.javaparser.ParserConfiguration;
 import com.github.javaparser.ast.CompilationUnit;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -13,8 +14,8 @@ import com.github.javaparser.javadoc.description.JavadocDescription;
 import com.google.googlejavaformat.java.Formatter;
 import com.google.googlejavaformat.java.FormatterException;
 import com.google.googlejavaformat.java.JavaFormatterOptions;
+import io.noties.enhance.options.SourceFormat;
 import org.apache.commons.io.FileUtils;
-import ru.noties.enhance.options.SourceFormat;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,22 +26,40 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import static ru.noties.enhance.Log.log;
+import static io.noties.enhance.Log.log;
 
 class EnhanceWriterImpl extends EnhanceWriter {
+
+    private interface Parser {
+        @Nonnull
+        CompilationUnit parse(@Nonnull File file);
+    }
 
     private interface SourceFormatter {
         @Nonnull
         String format(@Nonnull String source);
     }
 
+    @Nonnull
+    private final Parser parser;
+
+    @Nullable
     private final SourceFormatter sourceFormatter;
+
+    @Nonnull
     private final ApiInfoStore apiInfoStore;
+
+    @Nonnull
     private final ApiVersionFormatter apiVersionFormatter;
 
-    private final JavaParser javaParser = new JavaParser();
+    EnhanceWriterImpl(
+            int sdk,
+            @Nonnull SourceFormat format,
+            @Nonnull ApiInfoStore apiInfoStore,
+            @Nonnull ApiVersionFormatter apiVersionFormatter
+    ) {
+        this.parser = sdk >= Api.SDK_34.sdkInt ? new Parser17() : new Parser11();
 
-    EnhanceWriterImpl(@Nonnull SourceFormat format, @Nonnull ApiInfoStore apiInfoStore, @Nonnull ApiVersionFormatter apiVersionFormatter) {
         this.sourceFormatter = sourceFormatter(format);
         this.apiInfoStore = apiInfoStore;
         this.apiVersionFormatter = apiVersionFormatter;
@@ -48,8 +67,17 @@ class EnhanceWriterImpl extends EnhanceWriter {
 
     @Override
     public void write(@Nonnull File source, @Nonnull File destination) {
+        write("", source, destination);
+    }
 
+    // `path` could be used in future if some files would be processed differently
+    private void write(
+            @Nonnull String path,
+            @Nonnull File source,
+            @Nonnull File destination
+    ) {
         final File[] files = source.listFiles();
+        //noinspection RedundantLengthCheck
         if (files == null
                 || files.length == 0) {
             return;
@@ -64,33 +92,47 @@ class EnhanceWriterImpl extends EnhanceWriter {
                     throw new RuntimeException("Cannot create folder: " + folder.getPath());
                 }
 
-                write(file, folder);
+                write(
+                        path + "/" + file.getName(),
+                        file,
+                        folder
+                );
 
             } else {
 
                 final String name = file.getName();
                 final File f = new File(destination, name);
 
-                // @since 1.0.3 there are also `*.annotated.java` files, ignore them
-                if (name.endsWith(".java")
-                        && !name.endsWith(".annotated.java")) {
+                log("[Enhance] path:'%s' name:'%s'", path, name);
 
+                if (isJavaFileToProcess(name)) {
                     final String java = processJavaFile(file);
                     try {
                         FileUtils.write(f, java, StandardCharsets.UTF_8);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException(
+                                "Error writing file:'" + name + "' at path:'" + path + "'",
+                                e
+                        );
                     }
-
                 } else {
+                    log("[Enhance] copy file: %s", file.getPath());
                     try {
                         FileUtils.copyFile(file, f);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        throw new RuntimeException(
+                                "Error copying file:'" + name + "' at path:'" + path + "'",
+                                e
+                        );
                     }
                 }
             }
         }
+    }
+
+    private boolean isJavaFileToProcess(@Nonnull String name) {
+        // @since 1.0.3 there are also `*.annotated.java` files, ignore them
+        return name.endsWith(".java") && !name.endsWith(".annotated.java");
     }
 
     @Nonnull
@@ -98,18 +140,7 @@ class EnhanceWriterImpl extends EnhanceWriter {
 
         log("[Enhance] processing java source file: %s", file.getPath());
 
-        final CompilationUnit unit;
-        try {
-            final ParseResult<CompilationUnit> result = javaParser.parse(file);
-            if (result.isSuccessful()) {
-                //noinspection OptionalGetWithoutIsPresent
-                unit = result.getResult().get();
-            } else {
-                throw new RuntimeException(result.toString());
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        final CompilationUnit unit = parser.parse(file);
 
         unit.accept(new ApiInfoVisitor(apiVersionFormatter), apiInfoStore);
 
@@ -245,7 +276,7 @@ class EnhanceWriterImpl extends EnhanceWriter {
             } else {
                 final StringBuilder builder = new StringBuilder();
                 builder.append(typeDeclaration.getNameAsString());
-                TypeDeclaration parent = parentTypeDeclaration(typeDeclaration);
+                TypeDeclaration<?> parent = parentTypeDeclaration(typeDeclaration);
                 while (parent != null) {
                     builder.insert(0, '$');
                     builder.insert(0, parent.getNameAsString());
@@ -258,10 +289,85 @@ class EnhanceWriterImpl extends EnhanceWriter {
         }
 
         @Nullable
-        private static TypeDeclaration parentTypeDeclaration(@Nonnull TypeDeclaration typeDeclaration) {
-            return (TypeDeclaration) typeDeclaration.getParentNode()
+        private static TypeDeclaration<?> parentTypeDeclaration(@Nonnull TypeDeclaration<?> typeDeclaration) {
+            return (TypeDeclaration<?>) typeDeclaration.getParentNode()
                     .filter(node -> node instanceof TypeDeclaration)
                     .orElse(null);
+        }
+    }
+
+    // Unfortunately java-parser printer is a little weird and does not give enough options
+    //  to format the code
+//    @Nonnull
+//    private static Printer createDefaultPrinter(int indent) {
+//        final PrinterConfiguration configuration = new DefaultPrinterConfiguration()
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.INDENTATION, new Indentation(Indentation.IndentType.SPACES, indent)))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.ORDER_IMPORTS, Boolean.TRUE))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.SORT_IMPORTS_STRATEGY, new IntelliJImportOrderingStrategy()))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.PRINT_COMMENTS, Boolean.TRUE))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.PRINT_JAVADOC, Boolean.TRUE))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.COLUMN_ALIGN_PARAMETERS, Boolean.FALSE))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.COLUMN_ALIGN_FIRST_METHOD_CHAIN, Boolean.FALSE))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.INDENT_CASE_IN_SWITCH, Boolean.FALSE))
+//                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.MAX_ENUM_CONSTANTS_TO_ALIGN_HORIZONTALLY, 1));
+//        return new DefaultPrettyPrinter(configuration);
+//    }
+
+    private static class Parser11 implements Parser {
+
+        private final JavaParser javaParser11 = new JavaParser(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11));
+
+        @Nonnull
+        @Override
+        public CompilationUnit parse(@Nonnull File file) {
+            return parse(javaParser11, file);
+        }
+
+        @Nonnull
+        protected static CompilationUnit parse(@Nonnull JavaParser javaParser, @Nonnull File file) {
+            final CompilationUnit unit;
+            try {
+                final ParseResult<CompilationUnit> result = javaParser.parse(file);
+                if (result.isSuccessful()) {
+                    //noinspection OptionalGetWithoutIsPresent
+                    unit = result.getResult().get();
+                } else {
+                    throw new RuntimeException(result.toString());
+                }
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            return unit;
+        }
+    }
+
+    // Android 34 should have been compiled with Java-17, but some sources
+    //  contain java-17 keywords: `sealed` and `permits` as variable names
+    private static class Parser17 extends Parser11 {
+
+        private final JavaParser javaParser17 = new JavaParser(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17));
+
+        @Nonnull
+        @Override
+        public CompilationUnit parse(@Nonnull File file) {
+
+            // first try parsing with java-17 and then fallback to java-11
+            //  this is done because, even though android-34 should be compiled with java-17
+            //  there are classes that contain illegal variable names: `sealed` and `permits`
+            CompilationUnit compilationUnit = null;
+            try {
+                compilationUnit = parse(javaParser17, file);
+            } catch (Throwable t) {
+                log("[Enhance] Exception parsing with java-17");
+                //noinspection CallToPrintStackTrace
+                t.printStackTrace();
+            }
+
+            if (compilationUnit == null) {
+                compilationUnit = super.parse(file);
+            }
+
+            return compilationUnit;
         }
     }
 

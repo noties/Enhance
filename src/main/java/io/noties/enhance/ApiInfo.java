@@ -1,11 +1,14 @@
-package ru.noties.enhance;
+package io.noties.enhance;
+
+import javax.annotation.Nullable;
 
 public class ApiInfo {
 
-    public final ApiVersion since;
-    public final ApiVersion deprecated;
+    @Nullable
+    public final Integer since;
+    @Nullable public final Integer deprecated;
 
-    public ApiInfo(ApiVersion since, ApiVersion deprecated) {
+    public ApiInfo(@Nullable Integer since, @Nullable Integer deprecated) {
         this.since = since;
         this.deprecated = deprecated;
     }
