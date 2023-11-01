@@ -30,10 +30,18 @@ import static io.noties.enhance.Log.log;
 
 class EnhanceWriterImpl extends EnhanceWriter {
 
+    private interface Parser {
+        @Nonnull
+        CompilationUnit parse(@Nonnull File file);
+    }
+
     private interface SourceFormatter {
         @Nonnull
         String format(@Nonnull String source);
     }
+
+    @Nonnull
+    private final Parser parser;
 
     @Nullable
     private final SourceFormatter sourceFormatter;
@@ -44,31 +52,17 @@ class EnhanceWriterImpl extends EnhanceWriter {
     @Nonnull
     private final ApiVersionFormatter apiVersionFormatter;
 
-    // Android 34 should have been compiled with Java-17, but some sources
-    //  contain java-17 keywords: `sealed` and `permits` as variable names
-    @Nonnull
-    private final JavaParser javaParser17;
-
-    @Nonnull
-    private final JavaParser javaParser11;
-
-    private final boolean isJava17;
-
     EnhanceWriterImpl(
-            @Nonnull ApiVersion apiVersion,
+            int sdk,
             @Nonnull SourceFormat format,
             @Nonnull ApiInfoStore apiInfoStore,
             @Nonnull ApiVersionFormatter apiVersionFormatter
     ) {
+        this.parser = sdk >= Api.SDK_34.sdkInt ? new Parser17() : new Parser11();
+
         this.sourceFormatter = sourceFormatter(format);
         this.apiInfoStore = apiInfoStore;
         this.apiVersionFormatter = apiVersionFormatter;
-
-        this.javaParser17 = new JavaParser(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17));
-        this.javaParser11 = new JavaParser(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11));
-
-        final int sdk = apiVersion.getSdkInt();
-        this.isJava17 = sdk >= Api.SDK_34.sdkInt;
     }
 
     @Override
@@ -76,6 +70,7 @@ class EnhanceWriterImpl extends EnhanceWriter {
         write("", source, destination);
     }
 
+    // `path` could be used in future if some files would be processed differently
     private void write(
             @Nonnull String path,
             @Nonnull File source,
@@ -110,7 +105,7 @@ class EnhanceWriterImpl extends EnhanceWriter {
 
                 log("[Enhance] path:'%s' name:'%s'", path, name);
 
-                if (isJavaFileToProcess(path, name)) {
+                if (isJavaFileToProcess(name)) {
                     final String java = processJavaFile(file);
                     try {
                         FileUtils.write(f, java, StandardCharsets.UTF_8);
@@ -135,7 +130,7 @@ class EnhanceWriterImpl extends EnhanceWriter {
         }
     }
 
-    private boolean isJavaFileToProcess(@Nonnull String path, @Nonnull String name) {
+    private boolean isJavaFileToProcess(@Nonnull String name) {
         // @since 1.0.3 there are also `*.annotated.java` files, ignore them
         return name.endsWith(".java") && !name.endsWith(".annotated.java");
     }
@@ -145,30 +140,7 @@ class EnhanceWriterImpl extends EnhanceWriter {
 
         log("[Enhance] processing java source file: %s", file.getPath());
 
-        final CompilationUnit unit;
-        if (isJava17) {
-
-            // first try parsing with java-17 and then fallback to java-11
-            //  this is done because, even though android-34 should be compiled with java-17
-            //  there are classes that contain illegal variable names: `sealed` and `permits`
-            CompilationUnit compilationUnit = null;
-            try {
-                compilationUnit = compile(javaParser17, file);
-            } catch (Throwable t) {
-                log("[Enhance] Exception parsing with java-17");
-                //noinspection CallToPrintStackTrace
-                t.printStackTrace();
-            }
-
-            if (compilationUnit == null) {
-                compilationUnit = compile(javaParser11, file);
-            }
-
-            unit = compilationUnit;
-
-        } else {
-            unit = compile(javaParser11, file);
-        }
+        final CompilationUnit unit = parser.parse(file);
 
         unit.accept(new ApiInfoVisitor(apiVersionFormatter), apiInfoStore);
 
@@ -357,6 +329,59 @@ class EnhanceWriterImpl extends EnhanceWriter {
 //                .addOption(new DefaultConfigurationOption(DefaultPrinterConfiguration.ConfigOption.MAX_ENUM_CONSTANTS_TO_ALIGN_HORIZONTALLY, 1));
 //        return new DefaultPrettyPrinter(configuration);
 //    }
+
+    private static class Parser11 implements Parser {
+
+        private final JavaParser javaParser11 = new JavaParser(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_11));
+
+        @Nonnull
+        @Override
+        public CompilationUnit parse(@Nonnull File file) {
+            final CompilationUnit unit;
+            try {
+                final ParseResult<CompilationUnit> result = javaParser11.parse(file);
+                if (result.isSuccessful()) {
+                    //noinspection OptionalGetWithoutIsPresent
+                    unit = result.getResult().get();
+                } else {
+                    throw new RuntimeException(result.toString());
+                }
+            } catch (FileNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+            return unit;
+        }
+    }
+
+    // Android 34 should have been compiled with Java-17, but some sources
+    //  contain java-17 keywords: `sealed` and `permits` as variable names
+    private static class Parser17 extends Parser11 {
+
+        private final JavaParser javaParser17 = new JavaParser(new ParserConfiguration().setLanguageLevel(ParserConfiguration.LanguageLevel.JAVA_17));
+
+        @Nonnull
+        @Override
+        public CompilationUnit parse(@Nonnull File file) {
+
+            // first try parsing with java-17 and then fallback to java-11
+            //  this is done because, even though android-34 should be compiled with java-17
+            //  there are classes that contain illegal variable names: `sealed` and `permits`
+            CompilationUnit compilationUnit = null;
+            try {
+                compilationUnit = compile(javaParser17, file);
+            } catch (Throwable t) {
+                log("[Enhance] Exception parsing with java-17");
+                //noinspection CallToPrintStackTrace
+                t.printStackTrace();
+            }
+
+            if (compilationUnit == null) {
+                compilationUnit = super.parse(file);
+            }
+
+            return compilationUnit;
+        }
+    }
 
     @Nullable
     private static SourceFormatter sourceFormatter(@Nonnull SourceFormat format) {

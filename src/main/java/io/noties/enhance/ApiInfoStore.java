@@ -13,12 +13,12 @@ public abstract class ApiInfoStore {
         return new ApiInfoStoreImpl(apiVersions);
     }
 
-    static class TypeVersion extends ApiInfo {
+    public static class TypeVersion extends ApiInfo {
 
         final Map<String, ApiInfo> fields = new HashMap<>(3);
         final Map<String, ApiInfo> methods = new HashMap<>(3);
 
-        TypeVersion(ApiVersion since, ApiVersion deprecated) {
+        TypeVersion(@Nullable Integer since, @Nullable Integer deprecated) {
             super(since, deprecated);
         }
     }

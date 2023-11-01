@@ -9,16 +9,21 @@ public abstract class ApiVersionFormatter {
         return new Impl();
     }
 
-
-    public abstract String format(@Nonnull ApiVersion apiVersion);
+    @Nonnull
+    public abstract String format(int version);
 
 
     private static class Impl extends ApiVersionFormatter {
 
+        @Nonnull
         @Override
-        public String format(@Nonnull ApiVersion apiVersion) {
-            // for example - @since 5.1 Lollipop (22)
-            return apiVersion.getVersionName() + " " + apiVersion.getCodeName() + " (" + apiVersion.getSdkInt() + ")";
+        public String format(int version) {
+            final Api api = Api.of(version);
+            if (api != null) {
+                // for example - @since 5.1 Lollipop (22)
+                return api.versionName + " " + api.codeName + " (" + api.sdkInt + ")";
+            }
+            return "unknown (" + version + ")";
         }
     }
 }

@@ -65,6 +65,22 @@ java -jar enhance.jar -sdk 26 -sp "/Users/not_me/android/sdk"
 
 If you would like to restore unmodified copy of source code you can find it: `{your-home-directory}/.enhance-backup/android-{sdk}`
 
+## Formatting on JDK 17
+Formatting is done with the [google-java-format](https://github.com/google/google-java-format) library
+which requires access to the internals of the JDK. This is why on JDK-17 in order to format
+the sources additional commandline arguments are required:
+
+```bash
+java \
+  --add-exports=jdk.compiler/com.sun.tools.javac.api=ALL-UNNAMED \
+  --add-exports=jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED \
+  --add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED \
+  --add-exports=jdk.compiler/com.sun.tools.javac.parser=ALL-UNNAMED \
+  --add-exports=jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED \
+  --add-exports=jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED \
+  -jar enhance-34-all.jar -sdk 34 -format google
+```
+
 ## Thanks
 
 Big kudos to the maintainers of amazing [javaparser](https://github.com/javaparser/javaparser)!

@@ -22,7 +22,7 @@ public class Enhance {
         final ApiVersionFormatter apiVersionFormatter = ApiVersionFormatter.create();
 
         log("[Enhance] version: %s", EnhanceVersion.NAME);
-        log("[Enhance] latest Android SDK version: %s", apiVersionFormatter.format(ApiVersion.latest()));
+        log("[Enhance] latest Android SDK version: %s", apiVersionFormatter.format(Api.latest().sdkInt));
         log("[Enhance] https://github.com/noties/Enhance");
 
         final EnhanceOptions options = EnhanceOptions.create(args);
@@ -30,12 +30,13 @@ public class Enhance {
         // @since 1.0.2
         // check if we have this version info included and ask user if he/she want to proceed if
         // supplied sdk is not known to this library version
-        final ApiVersion apiVersion = ApiVersion.of(options.sdk());
-        if (apiVersion.isUnknown()) {
+        final int sdk = options.sdk();
+        final Api api = Api.of(sdk);
 
-            System.err.printf(Locale.US, "[Enhance] WARNING: specified SDK version %d (`%s`) is unknown to this " +
-                            "library version, do you wish to proceed anyway? (Y|N)%n", options.sdk(),
-                    apiVersionFormatter.format(apiVersion));
+        if (api == null) {
+
+            System.err.printf(Locale.US, "[Enhance] WARNING: specified SDK version %d is unknown to this " +
+                            "library version, do you wish to proceed anyway? (Y|N)%n", sdk);
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(System.in))) {
                 final String line = reader.readLine();
@@ -66,11 +67,8 @@ public class Enhance {
 
         final ApiInfoStore store = ApiInfoStore.create(sdkHelper.apiVersions());
         if (options.emitDiff()) {
-            log("[Enhance] emit diff for %d SDK level (%s %s)",
-                    apiVersion.getSdkInt(),
-                    apiVersion.getCodeName(),
-                    apiVersion.getVersionName());
-            printStatsFor(apiVersion, store.info());
+            log("[Enhance] emit diff for api:%s", api != null ? api : sdk);
+            printStatsFor(sdk, store.info());
             return;
         }
 
@@ -129,7 +127,7 @@ public class Enhance {
         log("[Enhance] processing source files");
 
         final EnhanceWriter writer = EnhanceWriter.create(
-                apiVersion,
+                sdk,
                 options.sourceFormat(),
                 store,
                 apiVersionFormatter

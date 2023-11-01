@@ -9,12 +9,12 @@ public abstract class EnhanceWriter {
 
     @Nonnull
     public static EnhanceWriter create(
-            @Nonnull ApiVersion apiVersion,
+            int sdk,
             @Nonnull SourceFormat format,
             @Nonnull ApiInfoStore apiInfoStore,
             @Nonnull ApiVersionFormatter apiVersionFormatter
     ) {
-        return new EnhanceWriterImpl(apiVersion, format, apiInfoStore, apiVersionFormatter);
+        return new EnhanceWriterImpl(sdk, format, apiInfoStore, apiVersionFormatter);
     }
 
     public abstract void write(@Nonnull File source, @Nonnull File destination);

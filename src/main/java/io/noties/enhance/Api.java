@@ -2,6 +2,7 @@ package io.noties.enhance;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.EnumMap;
 import java.util.List;
 
 public enum Api {
@@ -38,7 +39,8 @@ public enum Api {
     SDK_31(31, "12", "Android S"),
     SDK_32(32, "12", "Android S_V2"),
     SDK_33(33, "13", "Tiramisu"),
-    SDK_34(34, "14", "Upside Down Cake");
+    SDK_34(34, "14", "Upside Down Cake")
+    ;
 
     public final int sdkInt;
     public final String versionName;
@@ -68,11 +70,12 @@ public enum Api {
 
     @Nullable
     public static Api of(int sdkInt) {
-        for (Api api : VALUES) {
-            if (sdkInt == api.sdkInt) {
-                return api;
-            }
+        // NB! we assume that it starts at 1
+        // so, SDK_1 is at 0, SDK_2 at 1, etc
+        final int ordinal = sdkInt - 1;
+        if (ordinal < 0 || ordinal >= VALUES.size()) {
+            return null;
         }
-        return null;
+        return VALUES.get(ordinal);
     }
 }
