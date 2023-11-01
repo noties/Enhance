@@ -166,23 +166,6 @@ class EnhanceWriterImpl extends EnhanceWriter {
         return out;
     }
 
-    @Nonnull
-    private static CompilationUnit compile(@Nonnull JavaParser javaParser, @Nonnull File file) {
-        final CompilationUnit unit;
-        try {
-            final ParseResult<CompilationUnit> result = javaParser.parse(file);
-            if (result.isSuccessful()) {
-                //noinspection OptionalGetWithoutIsPresent
-                unit = result.getResult().get();
-            } else {
-                throw new RuntimeException(result.toString());
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-        return unit;
-    }
-
     private static class ApiInfoVisitor extends VoidVisitorAdapter<ApiInfoStore> {
 
         private final ApiVersionFormatter formatter;
@@ -337,9 +320,14 @@ class EnhanceWriterImpl extends EnhanceWriter {
         @Nonnull
         @Override
         public CompilationUnit parse(@Nonnull File file) {
+            return parse(javaParser11, file);
+        }
+
+        @Nonnull
+        protected static CompilationUnit parse(@Nonnull JavaParser javaParser, @Nonnull File file) {
             final CompilationUnit unit;
             try {
-                final ParseResult<CompilationUnit> result = javaParser11.parse(file);
+                final ParseResult<CompilationUnit> result = javaParser.parse(file);
                 if (result.isSuccessful()) {
                     //noinspection OptionalGetWithoutIsPresent
                     unit = result.getResult().get();
@@ -368,7 +356,7 @@ class EnhanceWriterImpl extends EnhanceWriter {
             //  there are classes that contain illegal variable names: `sealed` and `permits`
             CompilationUnit compilationUnit = null;
             try {
-                compilationUnit = compile(javaParser17, file);
+                compilationUnit = parse(javaParser17, file);
             } catch (Throwable t) {
                 log("[Enhance] Exception parsing with java-17");
                 //noinspection CallToPrintStackTrace
